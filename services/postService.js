@@ -1,4 +1,6 @@
+const validateSchema = require('../helpers/validateSchema');
 const postRepo = require('../repositories/postRepository');
+const { postSchema } = require('../validators/postValidator');
 
 exports.getAllPosts = () => postRepo.getAll();
 
@@ -8,15 +10,19 @@ exports.getPostById = async (id) => {
   return post;
 };
 
-exports.createPost = (authorId, content) => {
-  if (!content) throw { status: 400, message: 'Content is required' };
+exports.createPost = (authorId, payload) => {
+  const { content } = validateSchema(postSchema, payload);
+
+  // if (!content) throw { status: 400, message: 'Content is required' };
   return postRepo.create({ content, authorId });
 };
 
-exports.updatePost = async (postId, userId, content) => {
+exports.updatePost = async (postId, userId, payload) => {
+  const { content } = validateSchema(postSchema, payload);
+
   const post = await postRepo.findById(postId);
   if (!post) throw { status: 404, message: 'Post not found' };
-  if (post.authorId !== userId) throw { status: 403, message: 'Forbidden' };
+  if (post.authorId !== userId) throw { status: 403, message: 'Forbidden: Not your Post' };
 
   return postRepo.update(post, { content });
 };
@@ -24,7 +30,7 @@ exports.updatePost = async (postId, userId, content) => {
 exports.deletePost = async (postId, userId) => {
   const post = await postRepo.findById(postId);
   if (!post) throw { status: 404, message: 'Post not found' };
-  if (post.authorId !== userId) throw { status: 403, message: 'Forbidden' };
+  if (post.authorId !== userId) throw { status: 403, message: 'Forbidden: Not your Post' };
 
   return postRepo.delete(post);
 };

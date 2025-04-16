@@ -1,9 +1,10 @@
 const authService = require('../services/authService');
+const { success } = require('../helpers/responseHandler');
 
 exports.register = async (req, res, next) => {
   try {
     const user = await authService.register(req.body);
-    res.status(201).json({ message: 'User registered', user });
+    return success(res, user, 'User registered successfully', 201);
   } catch (err) {
     next(err);
   }
@@ -12,7 +13,7 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const result = await authService.login(req.body);
-    res.json(result); // { token }
+    return success(res, result, 'Login successful');
   } catch (err) {
     next(err);
   }

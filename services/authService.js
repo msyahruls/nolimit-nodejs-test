@@ -1,8 +1,12 @@
 const userRepo = require('../repositories/userRepository');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const jwt = require('jsonwebtoken');
+const { loginSchema, registerSchema } = require('../validators/authValidator');
+const validateSchema = require('../helpers/validateSchema');
 
-exports.register = async ({ name, email, password }) => {
+exports.register = async (payload) => {
+  const { name, email, password } = validateSchema(registerSchema, payload);
+
   const existing = await userRepo.findByEmail(email);
   if (existing) throw { status: 400, message: 'Email already registered' };
 
@@ -12,7 +16,9 @@ exports.register = async ({ name, email, password }) => {
   return { id: user.id, name: user.name, email: user.email };
 };
 
-exports.login = async ({ email, password }) => {
+exports.login = async (payload) => {
+  const { email, password } = validateSchema(loginSchema, payload);
+
   const user = await userRepo.findByEmail(email);
   if (!user) throw { status: 400, message: 'Invalid email or password' };
 
